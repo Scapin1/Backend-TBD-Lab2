@@ -3,17 +3,31 @@ BEGIN
 -- ARCHIVO ÚNICO DE POBLAMIENTO DE DATOS SQL (TOTAL: 270 REGISTROS)
 
 -- 1. POBLAMIENTO DE LA TABLA 'Stores' (8 Registros)
+-- NOTA: Se usan coordenadas reales aproximadas para compatibilidad PostGIS
+-- NOTA: Se usan coordenadas reales aproximadas para compatibilidad PostGIS
 -----------------------------------------------------------------
+-- Limpiar tablas antes de insertar para evitar duplicados si la base de datos estaba parcialmente llena
+TRUNCATE TABLE "stores", "products", "users", "supplier", "inventory", "transactions", "supplier_product", "distribution_centers" RESTART IDENTITY CASCADE;
+
 INSERT INTO Stores (id_store, name_store, address_store, city_store) VALUES
-                                                                           (1, 'Tienda Central Santiago', 'Av. Libertador 100', 'Santiago'),
-                                                                           (2, 'Tienda Costera Valparaíso', 'Calle Prat 250', 'Valparaíso'),
-                                                                           (3, 'Tienda Sur Concepción', 'Bulnes 50', 'Concepción'),
-                                                                           (4, 'Tienda Norte Antofagasta', 'Avenida Balmaceda 300', 'Antofagasta'),
-                                                                           (5, 'Tienda Cordillera Rancagua', 'Calle del Cobre 150', 'Rancagua'),
-                                                                           (6, 'Tienda Iquique Playa', 'Paseo Costero 50', 'Iquique'),
--- Nuevas tiendas para volumen
-                                                                           (7, 'Tienda Playera La Serena', 'Avenida del Mar 10', 'La Serena'),
-                                                                           (8, 'Tienda Austral Temuco', 'Av. Alemania 700', 'Temuco');
+(1, 'Tienda Central Santiago', ST_GeographyFromText('POINT(-70.6693 -33.4489)'), 'Santiago'),
+(2, 'Tienda Costera Valparaíso', ST_GeographyFromText('POINT(-71.6127 -33.0472)'), 'Valparaíso'),
+(3, 'Tienda Sur Concepción', ST_GeographyFromText('POINT(-73.0498 -36.8201)'), 'Concepción'),
+(4, 'Tienda Norte Antofagasta', ST_GeographyFromText('POINT(-70.4000 -23.6500)'), 'Antofagasta'),
+(5, 'Tienda Cordillera Rancagua', ST_GeographyFromText('POINT(-70.7392 -34.1706)'), 'Rancagua'),
+(6, 'Tienda Iquique Playa', ST_GeographyFromText('POINT(-70.1424 -20.2307)'), 'Iquique'),
+(7, 'Tienda Playera La Serena', ST_GeographyFromText('POINT(-71.2500 -29.9000)'), 'La Serena'),
+(8, 'Tienda Austral Temuco', ST_GeographyFromText('POINT(-72.5901 -38.7359)'), 'Temuco'),
+-- Nuevas Tiendas para Cobertura (Cercanas a Santiago - Radio < 10km)
+(9, 'Tienda Providencia', ST_GeographyFromText('POINT(-70.6100 -33.4200)'), 'Santiago'),
+(10, 'Tienda Ñuñoa', ST_GeographyFromText('POINT(-70.6000 -33.4500)'), 'Santiago');
+
+-- 1.1 POBLAMIENTO DE CENTROS DE DISTRIBUCIÓN (3 Registros)
+-----------------------------------------------------------------
+INSERT INTO distribution_centers (id_center, name_center, location) VALUES
+(1, 'Centro Distribución Norte', ST_GeographyFromText('POINT(-70.4000 -23.6500)')),
+(2, 'Centro Distribución Central', ST_GeographyFromText('POINT(-70.6693 -33.4489)')),
+(3, 'Centro Distribución Sur', ST_GeographyFromText('POINT(-73.0498 -36.8201)'));
 
 -- 2. POBLAMIENTO DE LA TABLA 'Products' (15 Registros)
 -----------------------------------------------------------------
@@ -47,23 +61,24 @@ INSERT INTO Supplier (supplier_id, supplier_name) VALUES
 -- 4. POBLAMIENTO DE LA TABLA 'Users' (12 Registros) - Depende de Stores
 -----------------------------------------------------------------
 -- 1 Admin (NULL Store)
+-- Password para todos: "password"
 INSERT INTO Users (id_user, name_user, email_user, password_user, role, id_storeU) VALUES
-    (1001, 'Ana Gutiérrez', 'ana.gutierrez@sys.com', 'hashedpass123', 'SUPERADMINISTRATOR', NULL);
+    (1001, 'Ana Gutiérrez', 'ana.gutierrez@sys.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'SUPERADMINISTRATOR', NULL);
 -- Managers (T1, T4, T7)
 INSERT INTO Users (id_user, name_user, email_user, password_user, role, id_storeU) VALUES
-                                                                                       (1002, 'Benjamín Soto', 'benjamin.soto@stgo.com', 'hashedpass456', 'ADMINISTRATOR', 1),
-                                                                                       (1007, 'Gloria Hernández', 'gloria.h@antofa.com', 'hashedpass999', 'ADMINISTRATOR', 4),
-                                                                                       (1011, 'Horacio Izquierdo', 'horacio.i@serena.com', 'hashedpass111', 'ADMINISTRATOR', 7);
+                                                                                       (1002, 'Benjamín Soto', 'benjamin.soto@stgo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ADMINISTRATOR', 1),
+                                                                                       (1007, 'Gloria Hernández', 'gloria.h@antofa.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ADMINISTRATOR', 4),
+                                                                                       (1011, 'Horacio Izquierdo', 'horacio.i@serena.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ADMINISTRATOR', 7);
 -- Employees
 INSERT INTO Users (id_user, name_user, email_user, password_user, role, id_storeU) VALUES
-                                                                                       (1003, 'Carla Díaz', 'carla.diaz@valpo.com', 'hashedpass789', 'EMPLOYEE', 2),
-                                                                                       (1004, 'Daniel Flores', 'daniel.flores@valpo.com', 'hashedpass012', 'EMPLOYEE', 2),
-                                                                                       (1005, 'Elena Rojas', 'elena.rojas@concep.com', 'hashedpass345', 'EMPLOYEE', 3),
-                                                                                       (1006, 'Felipe Muñoz', 'felipe.munoz@concep.com', 'hashedpass678', 'EMPLOYEE', 3),
-                                                                                       (1008, 'Héctor Ibarra', 'hector.i@ranca.com', 'hashedpass777', 'EMPLOYEE', 5),
-                                                                                       (1009, 'Isabel Jaramillo', 'isabel.j@iquique.com', 'hashedpass666', 'EMPLOYEE', 6),
-                                                                                       (1010, 'Javier Leiva', 'javier.l@iquique.com', 'hashedpass555', 'EMPLOYEE', 6),
-                                                                                       (1012, 'Karla Núñez', 'karla.n@temuco.com', 'hashedpass222', 'EMPLOYEE', 8);
+                                                                                       (1003, 'Carla Díaz', 'carla.diaz@valpo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'EMPLOYEE', 2),
+                                                                                       (1004, 'Daniel Flores', 'daniel.flores@valpo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'EMPLOYEE', 2),
+                                                                                       (1005, 'Elena Rojas', 'elena.rojas@concep.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'EMPLOYEE', 3),
+                                                                                       (1006, 'Felipe Muñoz', 'felipe.munoz@concep.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'EMPLOYEE', 3),
+                                                                                       (1008, 'Héctor Ibarra', 'hector.i@ranca.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'EMPLOYEE', 5),
+                                                                                       (1009, 'Isabel Jaramillo', 'isabel.j@iquique.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlNBxBFve4ZkWa', 'EMPLOYEE', 6),
+                                                                                       (1010, 'Javier Leiva', 'javier.l@iquique.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlNBxBFve4ZkWa', 'EMPLOYEE', 6),
+                                                                                       (1012, 'Karla Núñez', 'karla.n@temuco.com', '$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlNBxBFve4ZkWa', 'EMPLOYEE', 8);
 
 -- 5. POBLAMIENTO DE LA TABLA 'Supplier_Product' (15 Registros)
 ---------------------------------------------------------------------------------
@@ -116,7 +131,11 @@ INSERT INTO Inventory (id_storeIn, id_productIn, stock_inventory) VALUES
 -- T7 (La Serena - NUEVA)
 (7, 1, 360), (7, 2, 310), (7, 3, 430), (7, 4, 340), (7, 5, 220), (7, 6, 360), (7, 7, 3), (7, 8, 260), (7, 9, 290), (7, 10, 210), (7, 11, 370), (7, 12, 2), (7, 13, 310), (7, 14, 5), (7, 15, 330),
 -- T8 (Temuco - NUEVA)
-(8, 1, 340), (8, 2, 270), (8, 3, 410), (8, 4, 320), (8, 5, 190), (8, 6, 330), (8, 7, 2), (8, 8, 210), (8, 9, 260), (8, 10, 190), (8, 11, 310), (8, 12, 10), (8, 13, 240), (8, 14, 5), (8, 15, 390);
+(8, 1, 340), (8, 2, 270), (8, 3, 410), (8, 4, 320), (8, 5, 190), (8, 6, 330), (8, 7, 2), (8, 8, 210), (8, 9, 260), (8, 10, 190), (8, 11, 310), (8, 12, 10), (8, 13, 240), (8, 14, 5), (8, 15, 390),
+-- T9 (Providencia - Cerca de Stgo) - Tiene mucho stock de P1 para ser transferido a T1
+(9, 1, 500), (9, 2, 100), (9, 3, 100), (9, 4, 100), (9, 5, 100), (9, 6, 100), (9, 7, 100), (9, 8, 100), (9, 9, 100), (9, 10, 100), (9, 11, 100), (9, 12, 100), (9, 13, 100), (9, 14, 100), (9, 15, 100),
+-- T10 (Ñuñoa - Cerca de Stgo)
+(10, 1, 10), (10, 2, 100), (10, 3, 100), (10, 4, 100), (10, 5, 100), (10, 6, 100), (10, 7, 100), (10, 8, 100), (10, 9, 100), (10, 10, 100), (10, 11, 100), (10, 12, 100), (10, 13, 100), (10, 14, 100), (10, 15, 100);
 
 -- 7. POBLAMIENTO DE LA TABLA 'Transactions' (88 Registros) - Flujo Consistente y Redundante
 -------------------------------------------------------------------------------------------

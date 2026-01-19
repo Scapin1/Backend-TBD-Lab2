@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -29,9 +28,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest request, HttpServletRequest httpRequest) {
-            return userService.createUser(request, httpRequest);
+        return userService.createUser(request, httpRequest);
     }
 }
-
-
-

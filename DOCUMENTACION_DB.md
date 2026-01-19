@@ -22,8 +22,9 @@ Almacena la información de las tiendas físicas.
 **Campos:**
 - `id_store` (SERIAL, PRIMARY KEY): Identificador único de la tienda
 - `name_store` (VARCHAR(255)): Nombre de la tienda
-- `address_store` (VARCHAR(255)): Dirección de la tienda
+- `address_store` (GEOGRAPHY(POINT, 4326)): Ubicación geoespacial de la tienda (Latitud/Longitud)
 - `city_store` (VARCHAR(255)): Ciudad donde se encuentra la tienda
+- `id_assigned_center` (INTEGER): Clave foránea al Centro de Distribución asignado
 
 #### 3. Users
 Almacena la información de los usuarios del sistema.
@@ -98,6 +99,31 @@ Tabla intermedia que relaciona proveedores con productos, almacenando informaci�
 **Relaciones:**
 - `fk_supplier_product`: Clave foránea que referencia a `Supplier(supplier_id)`
 - `fk_product_supplier`: Clave foránea que referencia a `Products(id_product)`
+
+#### 8. Distribution Centers
+Almacena los centros de distribución logística.
+
+**Campos:**
+- `id_center` (SERIAL, PRIMARY KEY): Identificador único del centro
+- `name_center` (VARCHAR(255)): Nombre del centro
+- `location` (GEOGRAPHY(POINT, 4326)): Ubicación geoespacial del centro
+
+---
+
+## CAPACIDADES ESPACIALES (POSTGIS)
+
+El sistema utiliza la extensión PostGIS para realizar operaciones geoespaciales avanzadas directamente en la base de datos.
+Se utilizan tipos de datos `GEOGRAPHY(POINT, 4326)` para almacenar coordenadas GPS (WGS 84) con alta precisión.
+
+### Índices Espaciales
+Se han creado índices GIST (Generalized Search Tree) para optimizar consultas espaciales:
+- `idx_stores_location`: Índice en `stores.direction_store`
+- `idx_centers_location`: Índice en `distribution_centers.location`
+
+### Operaciones Soportadas
+1. **Búsqueda KNN (K-Nearest Neighbors)**: Encuentra las tiendas más cercanas usando el operador `<->`.
+2. **Cálculo de Distancias**: Uso de `ST_Distance` para logística de transporte.
+3. **Análisis de Cobertura**: Uso de `ST_DWithin` para encontrar tiendas en un radio de 10km.
 
 ---
 

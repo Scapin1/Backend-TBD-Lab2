@@ -37,18 +37,19 @@ public class StartUpQuery implements CommandLineRunner {
                 "SqlResources/resumen_stock_tienda.sql",
                 "SqlResources/index_resumen_stock_tienda.sql",
                 "SqlResources/consulta7.sql",
-                "SqlResources/transfer_inventory.sql"
-        ));
+                "SqlResources/transfer_inventory.sql",
+                "SqlResources/spatial.sql"));
 
         boolean shouldRunInitData = false;
 
         try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement()) {
+                Statement stmt = conn.createStatement()) {
 
             // 1. Ejecutar todos los archivos de esquema primero
             for (String path : sqlFiles) {
                 InputStream input = getClass().getClassLoader().getResourceAsStream(path);
-                if (input == null) throw new FileNotFoundException("No se encontró el archivo SQL: " + path);
+                if (input == null)
+                    throw new FileNotFoundException("No se encontró el archivo SQL: " + path);
                 String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8).trim();
                 if (!sql.isEmpty()) {
                     stmt.execute(sql);
@@ -67,7 +68,8 @@ public class StartUpQuery implements CommandLineRunner {
             if (shouldRunInitData) {
                 String initPath = "SqlResources/initData.sql";
                 InputStream input = getClass().getClassLoader().getResourceAsStream(initPath);
-                if (input == null) throw new FileNotFoundException("No se encontró el archivo SQL: " + initPath);
+                if (input == null)
+                    throw new FileNotFoundException("No se encontró el archivo SQL: " + initPath);
                 String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8).trim();
                 if (!sql.isEmpty()) {
                     stmt.execute(sql);
@@ -78,7 +80,8 @@ public class StartUpQuery implements CommandLineRunner {
                 stmt.execute("SELECT setval('products_id_product_seq', (SELECT MAX(id_product) FROM Products))");
                 stmt.execute("SELECT setval('stores_id_store_seq', (SELECT MAX(id_store) FROM Stores))");
                 stmt.execute("SELECT setval('supplier_supplier_id_seq', (SELECT MAX(supplier_id) FROM Supplier))");
-                stmt.execute("SELECT setval('transactions_id_transaction_seq', (SELECT MAX(id_transaction) FROM Transactions))");
+                stmt.execute(
+                        "SELECT setval('transactions_id_transaction_seq', (SELECT MAX(id_transaction) FROM Transactions))");
                 stmt.execute("SELECT setval('users_id_user_seq', (SELECT MAX(id_user) FROM Users))");
             }
 
