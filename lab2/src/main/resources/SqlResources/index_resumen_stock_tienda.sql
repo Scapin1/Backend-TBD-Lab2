@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS idx_resumen_stock_tienda ON resumen_stock_tienda (id_store, name_store);
