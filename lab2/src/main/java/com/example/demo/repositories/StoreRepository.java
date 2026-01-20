@@ -125,13 +125,13 @@ public class StoreRepository {
     // Spatial Analysis
 
     /**
-     * Calculates the distance in meters between two stores.
+     * Calculates the distance in kilometers between two stores.
      */
     public Double calculateDistance(Long storeId1, Long storeId2) {
         String sql = "SELECT ST_Distance(" +
                 "(SELECT address_store FROM stores WHERE id_store = ?), " +
                 "(SELECT address_store FROM stores WHERE id_store = ?)" +
-                ")";
+                ")/1000 AS distance_km";
         return jdbcTemplate.queryForObject(sql, Double.class, storeId1, storeId2);
     }
 

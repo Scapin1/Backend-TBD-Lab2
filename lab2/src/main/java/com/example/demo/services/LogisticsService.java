@@ -32,19 +32,7 @@ public class LogisticsService {
 
     // 3. Asignación de Centro de Distribución
     public DistributionCenter assignBestDistributionCenter(Long storeId) {
-        // Obtenemos la ubicación de la tienda (en formato String WKT) para buscar el CD
-        // Sin embargo, distributionCenterRepository.findNearest toma (lat, lon).
-        // Necesitamos extraer lat/lon de la tienda.
-        // O mejor: Agregar un metodo en DistributionCenterRepository que tome una
-        // geometría WKT o ID de tienda.
-        // Dado que "cimentar lo menos posible", haremos una query en el repo de Store
-        // para obtener lat/lon si fuera necesario,
-        // Pero JDBC Template y PostGIS manejan WKT.
-        // El metodo findNearest usa lat/lon. Deberiamos parsear el WKT que tenemos en
-        // Stores.address_store.
 
-        // Estrategia simplificada: User StoreRepository para obtener el WKT, parsear
-        // "POINT(lon lat)" y llamar.
         Stores store = storeRepository.findById(storeId);
         if (store == null || store.getAddress_store() == null)
             return null;
